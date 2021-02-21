@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <h1>LG教育</h1>
+    <h1>LGJY</h1>
     <!-- 根路由出口 -->
     <router-view />
   </div>
