@@ -68,6 +68,13 @@ const routes = [
         path: '/menu/:id/menu-edit',
         name: 'menu-edit',
         component: () => import(/* webpackChunkName: 'menu-edit' */'@/views/menu/components/MenuEdit')
+      },
+      // 分配菜单路由组件
+      {
+        path: '/role/:roleId/alloc-menu',
+        name: 'alloc-menu',
+        component: () => import(/* webpackChunkName: 'alloc-menu' */'@/views/role/alloc-menu'),
+        props: true
       }
     ]
   },
