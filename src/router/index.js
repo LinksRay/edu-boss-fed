@@ -1,82 +1,106 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-
-import Login from '@/views/login/index'
-import Layout from '@/views/layout/index'
-import Home from '@/views/home/index'
-import Role from '@/views/role/index'
-import Menu from '@/views/menu/index'
-import Resource from '@/views/resource/index'
-import Course from '@/views/course/index'
-import User from '@/views/user/index'
-import Advert from '@/views/advert/index'
-import ErrorPage from '@/views/error-page/index'
-import AdvertSpace from '@/views/advert-space/index'
+import store from '@/store'
 
 Vue.use(VueRouter)
 
-// 路由规则
+// 路由规则（添加需要认证 requiresAuth 信息）
 const routes = [
   {
     path: '/login',
     name: 'login',
-    component: Login
+    component: () => import(/* webpackChunkName: 'login' */'@/views/login/index')
   },
   {
     path: '/',
-    component: Layout,
+    component: () => import(/* webpackChunkName: 'layout' */'@/views/layout/index'),
+    // 直接给某个路由设置meta，内部子路由和自身都需要验证
+    meta: {
+      requiresAuth: true
+    },
     children: [
       {
         path: '',
         name: 'home',
-        component: Home
+        component: () => import(/* webpackChunkName: 'home' */'@/views/home/index')
       },
       {
         path: '/role',
         name: 'role',
-        component: Role
+        component: () => import(/* webpackChunkName: 'role' */'@/views/role/index')
       },
       {
         path: '/menu',
         name: 'menu',
-        component: Menu
+        component: () => import(/* webpackChunkName: 'menu' */'@/views/menu/index')
       },
       {
         path: '/resource',
         name: 'resource',
-        component: Resource
+        component: () => import(/* webpackChunkName: 'resource' */'@/views/resource/index')
       },
       {
         path: '/course',
         name: 'course',
-        component: Course
+        component: () => import(/* webpackChunkName: 'course' */'@/views/course/index')
       },
       {
         path: '/user',
         name: 'user',
-        component: User
+        component: () => import(/* webpackChunkName: 'user' */'@/views/user/index')
       },
       {
         path: '/advert',
         name: 'advert',
-        component: Advert
+        component: () => import(/* webpackChunkName: 'advert' */'@/views/advert/index')
       },
       {
         path: '/advert-space',
         name: 'advert-space',
-        component: AdvertSpace
+        component: () => import(/* webpackChunkName: 'advert-space' */'@/views/advert-space/index')
+      },
+      {
+        path: '/menu/menu-create',
+        name: 'menu-create',
+        component: () => import(/* webpackChunkName: 'menu-create' */'@/views/menu/components/MenuCreate')
+      },
+      {
+        path: '/menu/:id/menu-edit',
+        name: 'menu-edit',
+        component: () => import(/* webpackChunkName: 'menu-edit' */'@/views/menu/components/MenuEdit')
       }
     ]
   },
   {
     path: '*',
     name: 'error-page',
-    component: ErrorPage
+    component: () => import(/* webpackChunkName: 'error-page' */'@/views/error-page/index')
   }
 ]
 
 const router = new VueRouter({
   routes
+})
+
+router.beforeEach((to, from, next) => {
+  // 验证 to 路由是否需要进行身份验证
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    // 验证 Vuex 中的用户信息是否存在
+    if (!store.state.user) {
+      // 未登录，跳转到登陆页
+      return next({
+        name: 'login',
+        query: {
+          // 将本次路由的 fullPath 传递给 login 页面
+          redirect: to.fullPath
+        }
+      })
+    }
+    // 已经登陆，允许通过
+    next()
+  } else {
+    next()
+  }
 })
 
 export default router
